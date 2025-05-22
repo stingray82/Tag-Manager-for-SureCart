@@ -1,0 +1,34 @@
+=== dashy for surecart ===
+Contributors: reallyusefulplugins
+Donate link: https://reallyusefulplugins.com/donate
+Tags: dashboard, tabs, surecart, custom icons, shortcode
+Requires at least: 
+Tested up to: 
+Stable tag: 
+Requires PHP: 
+License: GPL-2.0-or-later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
+
+== Description ==
+Easily Map your Sure Cart Products Price IDS to Fluent CRM tags for access restriction or sub sectioning purchases
+
+== Installation ==
+1. Upload the `rup-crm-tag-mapper` folder to the `/wp-content/plugins/` directory.
+2. Activate the plugin through the 'Plugins' menu in WordPress.
+3. Configure the plugin settings it is located in the SureCart Menu
+
+== Frequently Asked Questions ==
+= How do I add a new dashboard tab? =
+After Activating Navigate to the new submenu in the Sure Cart Menu and enable, add your price ID select your Fluent Tag and Save
+== Changelog ==
+= 1.03 (23 May 2025) =
+New: Added Automatic Updater
+
+= 1.02 (22 May 2025) =
+New: Allow each mapping to be disabled i.e. for offer periods.
+
+= 1.01 (20 May 2025) =
+New: Added Dynamic Loading of Tags
+
+= 1.0 (19 May 2025) =
+New: Initial Release
