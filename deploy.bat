@@ -1,7 +1,10 @@
 @echo off
+setlocal enabledelayedexpansion
 REM ============================================
 REM CONFIGURATION - adjust these paths as needed
 REM ============================================
+SET "PLUIGN_NAME=Tag Manager for SureCart"
+SET "PLUGIN_TAGS=surecart, crm, fluentcrm, tags, ecommerce"
 SET "HEADER_SCRIPT=C:\Ignore By Avast\0. PATHED Items\Plugins\deployscripts\myplugin_headers.php"
 SET "PLUGIN_DIR=C:\Users\Nathan\Git\Tag-Manager-for-SureCart\rup-crm-tag-mapper"
 IF "%PLUGIN_DIR:~-1%"=="\" SET "PLUGIN_DIR=%PLUGIN_DIR:~0,-1%"
@@ -33,6 +36,28 @@ REM Running Header Update
 REM ============================================
 php "%HEADER_SCRIPT%" "%PLUGIN_FILE%"
 
+REM — extract “Requires at least” —
+for /f "tokens=2* delims=:" %%A in ('findstr /C:"Requires at least:" "%PLUGIN_FILE%"') do (
+  for /f "tokens=* delims= " %%X in ("%%A") do set "requires_at_least=%%X"
+)
+
+REM — extract “Tested up to” —
+for /f "tokens=2* delims=:" %%A in ('findstr /C:"Tested up to:" "%PLUGIN_FILE%"') do (
+  for /f "tokens=* delims= " %%X in ("%%A") do set "tested_up_to=%%X"
+)
+
+REM — extract “Version” —
+for /f "tokens=2* delims=:" %%A in ('findstr /C:"Version:" "%PLUGIN_FILE%"') do (
+  for /f "tokens=* delims= " %%X in ("%%A") do set "version=%%X"
+)
+
+REM — extract “Requires PHP” —
+for /f "tokens=2* delims=:" %%A in ('findstr /C:"Requires PHP:" "%PLUGIN_FILE%"') do (
+  for /f "tokens=* delims= " %%X in ("%%A") do set "requires_php=%%X"
+)
+
+
+
 REM ============================================
 REM CREATE THE WORDPRESS.ORG COMPATIBLE readme.txt
 REM ============================================
@@ -41,10 +66,10 @@ SET "TEMP_README=%PLUGIN_DIR%\readme_temp.txt"
 
 REM Create the dynamic header section
 (
-    echo === dashy for surecart ===
+    echo === %PLUIGN_NAME% ===
     echo Contributors: reallyusefulplugins
     echo Donate link: https://reallyusefulplugins.com/donate
-    echo Tags: dashboard, tabs, surecart, custom icons, shortcode
+    echo Tags: %PLUGIN_TAGS%
     echo Requires at least: %requires_at_least%
     echo Tested up to: %tested_up_to%
     echo Stable tag: %version%

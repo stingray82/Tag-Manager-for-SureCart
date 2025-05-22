@@ -1,17 +1,17 @@
 <?php
 /**
- * Plugin Name:         RUP CRM Tag Mapper for SureCart
- * Description:         Map SureCart price IDs to FluentCRM tags and assign tags on purchase.
- * Tested up to:        6.8.1
- * Requires at least:   6.5
- * Requires PHP:        8.0
- * Version:             1.0.4
- * Author:              Reallyusefulplugins.com
- * Author URI:          https://reallyusefulplugins.com
- * License:             GPL2
- * License URI:         https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain:         rup-crm-tag-mapper
- * Website:             https://reallyusefulplugins.com
+ * Plugin Name:       RUP CRM Tag Mapper for SureCart
+ * Description:       Map SureCart price IDs to FluentCRM tags and assign tags on purchase.
+ * Tested up to:      6.8.1
+ * Requires at least: 6.5
+ * Requires PHP:      8.0
+ * Version:           1.0.4
+ * Author:            Reallyusefulplugins.com
+ * Author URI:        https://reallyusefulplugins.com
+ * License:           GPL2
+ * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
+ * Text Domain:       rup-crm-tag-mapper
+ * Website:           https://reallyusefulplugins.com
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -263,7 +263,7 @@ add_action( 'plugins_loaded', function() {
     $updater_config = [
         'plugin_file' => plugin_basename( __FILE__ ),
         'slug'        => 'rup-crm-tag-mapper',
-        'name'        => 'rup-crm-tag-mapper',
+        'name'        => 'Tag Manager for SureCart',
         'version'     => RUP_CRM_TM_MANAGER_VERSION,
         'key'         => 'CeW5jUv66xCMVZd83QTema',
         'server'      => 'https://updater.reallyusefulplugins.com/u/',

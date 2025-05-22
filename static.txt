@@ -1,11 +1,16 @@
+Easily Map your Sure Cart Products Price IDS to Fluent CRM tags for access restriction or sub sectioning purchases
+
 == Description ==
+
 Easily Map your Sure Cart Products Price IDS to Fluent CRM tags for access restriction or sub sectioning purchases
 
 == Installation ==
+
 1. Upload the `rup-crm-tag-mapper` folder to the `/wp-content/plugins/` directory.
 2. Activate the plugin through the 'Plugins' menu in WordPress.
 3. Configure the plugin settings it is located in the SureCart Menu
 
 == Frequently Asked Questions ==
+
 = How do I add a new dashboard tab? =
 After Activating Navigate to the new submenu in the Sure Cart Menu and enable, add your price ID select your Fluent Tag and Save
