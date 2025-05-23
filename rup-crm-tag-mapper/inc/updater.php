@@ -157,7 +157,7 @@ if ( ! class_exists( __NAMESPACE__ . '\UUPD_Updater_V1' ) ) {
                 'new_version' => $meta->version ?? $c['version'],
                 'package'     => $meta->download_url ?? '',
                 'tested'      => $meta->tested ?? '',
-                'requires'    => $meta->min_wp_version ?? '',
+                'requires'    => $meta->requires       ?? $meta->min_wp_version ?? '',
                 'sections'    => isset( $meta->sections ) ? (array) $meta->sections : [],
                 'icons'       => isset( $meta->icons )    ? (array) $meta->icons    : [],
             ];
@@ -166,7 +166,7 @@ if ( ! class_exists( __NAMESPACE__ . '\UUPD_Updater_V1' ) ) {
         }
 
         /** Provide plugin information for the details popup. */
-        public function plugin_info( $res, $action, $args ) {
+      public function plugin_info( $res, $action, $args ) {
     $c = $this->config;
     if ( 'plugin_information' !== $action || $args->slug !== $c['slug'] ) {
         return $res;
@@ -177,32 +177,36 @@ if ( ! class_exists( __NAMESPACE__ . '\UUPD_Updater_V1' ) ) {
         return $res;
     }
 
-    // Build sections array: copy anything your server returned
+    // Build sections array (description, installation, faq, screenshots, changelog…)
     $sections = [];
     if ( isset( $meta->sections ) ) {
-        // support either object or array
         foreach ( (array) $meta->sections as $key => $content ) {
             $sections[ $key ] = $content;
         }
     }
 
     return (object) [
-        'name'          => $c['name'],
-        'title'         => $c['name'],
-        'slug'          => $c['slug'],
-        'version'       => $meta->version ?? '',
-        'tested'        => $meta->tested ?? '',
-        'requires'      => $meta->min_wp_version ?? '',
-        'sections'      => $sections,
-        'download_link' => $meta->download_url ?? '',
-        'icons'         => isset( $meta->icons )   ? (array) $meta->icons   : [],
-        'banners'       => isset( $meta->banners ) ? (array) $meta->banners : [],
-        // Optional: if your server returns screenshots separately
-        'screenshots'   => isset( $meta->screenshots ) 
-                             ? (array) $meta->screenshots 
-                             : [],
+        'name'             => $c['name'],
+        'title'            => $c['name'],                  // Popup title
+        'slug'             => $c['slug'],
+        'version'          => $meta->version        ?? '',
+        'author'           => $meta->author         ?? '',
+        'author_homepage'  => $meta->author_homepage ?? '',
+        'requires'         => $meta->requires       ?? $meta->min_wp_version ?? '',
+        'tested'           => $meta->tested         ?? '',
+        'requires_php'     => $meta->requires_php   ?? '',   // “Requires PHP: x.x or higher”
+        'last_updated'     => $meta->last_updated   ?? '',
+        'download_link'    => $meta->download_url   ?? '',
+        'homepage'         => $meta->homepage       ?? '',
+        'sections'         => $sections,
+        'icons'            => isset( $meta->icons )   ? (array) $meta->icons   : [],
+        'banners'          => isset( $meta->banners ) ? (array) $meta->banners : [],
+        'screenshots'      => isset( $meta->screenshots ) 
+                                 ? (array) $meta->screenshots 
+                                 : [],
     ];
 }
+
 
         /** Handle theme update injection. */
         public function theme_update( $trans ) {

@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name:       RUP CRM Tag Mapper for SureCart
+ * Plugin Name:       Tag Manager for SureCart
  * Description:       Map SureCart price IDs to FluentCRM tags and assign tags on purchase.
  * Tested up to:      6.8.1
  * Requires at least: 6.5
