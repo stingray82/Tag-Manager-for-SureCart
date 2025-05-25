@@ -3,6 +3,7 @@ setlocal enabledelayedexpansion
 REM ============================================
 REM CONFIGURATION - adjust these paths as needed
 REM ============================================
+REM  Precede any special character (like &, |, ^, <, >) with a caret ^.
 SET "PLUIGN_NAME=Tag Manager for SureCart"
 SET "PLUGIN_TAGS=surecart, crm, fluentcrm, tags, ecommerce"
 SET "HEADER_SCRIPT=C:\Ignore By Avast\0. PATHED Items\Plugins\deployscripts\myplugin_headers.php"
