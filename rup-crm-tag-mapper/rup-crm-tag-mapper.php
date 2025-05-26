@@ -5,7 +5,7 @@
  * Tested up to:      6.8.1
  * Requires at least: 6.5
  * Requires PHP:      8.0
- * Version:           1.0.7
+ * Version:           1.0.7.1
  * Author:            Reallyusefulplugins.com
  * Author URI:        https://reallyusefulplugins.com
  * License:           GPL2
@@ -18,6 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 define( 'RUP_CRM_TM_OPTION_ENABLED',  'rup_crm_tm_enabled' );
 define( 'RUP_CRM_TM_OPTION_MAPPINGS', 'rup_crm_tm_mappings' );
+define('RUP_CRM_TM_VERSION', '1.0.7.1');
 
 // Always ensure there's at least one blank mapping
 function rup_crm_tm_get_mappings() {
@@ -330,3 +331,16 @@ add_action( 'surecart/checkout_confirmed', 'rup_crm_apply_fluentcrm_tags', 10, 1
 // Also hook it to your second event
 add_action( 'surelywp_tk_lm_on_new_order_create', 'rup_crm_apply_fluentcrm_tags', 10, 1 );
 
+add_action( 'plugins_loaded', function() {
+    $updater_config = [
+        'plugin_file' => plugin_basename( __FILE__ ),
+        'slug'        => 'rup-crm-tag-mapper',  // "rup-changelogger"
+        'name'        => 'Tag Manager for SureCart',        // "Changelogger"
+        'version'     => RUP_CRM_TM_VERSION,     // "1.01"
+        'key'         => 'CeW5jUv66xCMVZd83QTema',
+        'server'      => 'https://updater.reallyusefulplugins.com/u/',
+    ];
+
+    require_once __DIR__ . '/inc/updater.php';
+    $updater = new \UUPD\V1\UUPD_Updater_V1( $updater_config  );
+} );
