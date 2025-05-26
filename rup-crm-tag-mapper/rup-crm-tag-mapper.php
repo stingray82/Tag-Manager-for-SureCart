@@ -14,68 +14,59 @@
  * Website:           https://reallyusefulplugins.com
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
-    exit;
-}
+if ( ! defined( 'ABSPATH' ) ) exit;
 
-define( 'RUP_CRM_TM_MANAGER_VERSION', '1.0.6' );
-
-// Option keys
 define( 'RUP_CRM_TM_OPTION_ENABLED',  'rup_crm_tm_enabled' );
 define( 'RUP_CRM_TM_OPTION_MAPPINGS', 'rup_crm_tm_mappings' );
 
-/* --------------------------------------------------
-   DEBUGGING HELPER FUNCTION
-   define( 'rup_crm_tm_debug', true );
--------------------------------------------------- */
-function rup_crm_tm_debuglog( $message ) {
-    if ( defined( 'rup_crm_tm_debug' ) && rup_crm_tm_debug === true ) {
-        error_log( $message );
+// Always ensure there's at least one blank mapping
+function rup_crm_tm_get_mappings() {
+    $raw = get_option( RUP_CRM_TM_OPTION_MAPPINGS, '[]' );
+    $maps = json_decode( $raw, true );
+    if ( ! is_array( $maps ) || empty( $maps ) ) {
+        $maps = [
+            [ 'name'=>'', 'price_id'=>'', 'tags'=>[], 'enabled'=>'1' ]
+        ];
+        update_option( RUP_CRM_TM_OPTION_MAPPINGS, wp_json_encode( $maps ) );
     }
+    return $maps;
 }
 
 /**
- * Register settings: enable checkbox and mapping repeater
+ * Register settings
  */
-add_action( 'admin_init', function() {
+add_action( 'admin_init', function(){
     register_setting( 'rup_crm_tm_group', RUP_CRM_TM_OPTION_ENABLED, [
         'type'              => 'string',
-        'sanitize_callback' => function( $v ) {
-            return $v === '1' ? '1' : '0';
-        },
+        'sanitize_callback' => fn( $v ) => $v === '1' ? '1' : '0',
         'default'           => '0',
     ] );
-
-    // Store mappings as JSON with multiple tags
     register_setting( 'rup_crm_tm_group', RUP_CRM_TM_OPTION_MAPPINGS, [
         'type'              => 'string',
         'sanitize_callback' => function( $v ) {
-            // 1) If loading existing JSON, leave untouched
-            if ( is_string( $v ) && null !== json_decode( $v, true ) ) {
+            if ( is_string( $v ) && json_decode( $v, true ) !== null ) {
                 return $v;
             }
-            // 2) If sanitizing form POST (array), encode it
             if ( is_array( $v ) ) {
-                return wp_json_encode( array_map( function( $map ) {
+                return wp_json_encode( array_map( function( $map ){
                     return [
+                        'name'     => sanitize_text_field( $map['name'] ?? '' ),
                         'price_id' => sanitize_text_field( $map['price_id'] ?? '' ),
                         'tags'     => array_values( array_map( 'sanitize_text_field', (array) ( $map['tags'] ?? [] ) ) ),
                         'enabled'  => ( isset( $map['enabled'] ) && $map['enabled'] === '1' ) ? '1' : '0',
                     ];
                 }, $v ) );
             }
-            // 3) Anything else: empty list
             return '[]';
         },
         'default'           => '[]',
     ] );
-} );
-
+});
 
 /**
- * Add settings page under Settings menu
+ * Add submenu
  */
-add_action( 'admin_menu', function() {
+add_action( 'admin_menu', function(){
     add_submenu_page(
         'sc-onboarding-checklist',
         'CRM Tag Mapper',
@@ -87,50 +78,69 @@ add_action( 'admin_menu', function() {
 }, 100 );
 
 /**
- * Render admin settings page (with per‐row delete buttons).
+ * Enqueue Select2
+ */
+add_action( 'admin_enqueue_scripts', function(){
+    if ( ! isset( $_GET['page'] ) || $_GET['page'] !== 'rup-crm-tag-mapper' ) {
+        return;
+    }
+    wp_enqueue_style(  'select2-css', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css' );
+    wp_enqueue_script( 'select2-js',  'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.full.min.js', [ 'jquery' ], null, true );
+    wp_add_inline_script( 'select2-js', "
+jQuery(function($){
+  $('.rup-crm-tag-select').select2({
+    placeholder: 'Search & select tags…',
+    width: '100%',
+    allowClear: true,
+    minimumResultsForSearch: 0
+  });
+});
+" );
+});
+
+/**
+ * Render settings page and handle add/delete via PHP
  */
 function rup_crm_tm_render_admin_page() {
     if ( ! current_user_can( 'manage_options' ) ) {
         return;
     }
 
-    // Handle deletion requests
-    if ( isset( $_GET['delete_mapping'] ) && isset( $_GET['_wpnonce'] ) ) {
-        $delete_index = absint( $_GET['delete_mapping'] );
-        $nonce_action = 'rup_crm_tm_delete_' . $delete_index;
-        if ( wp_verify_nonce( $_GET['_wpnonce'], $nonce_action ) ) {
-            $json     = get_option( RUP_CRM_TM_OPTION_MAPPINGS, '[]' );
-            $mappings = json_decode( $json, true );
-            if ( is_array( $mappings ) && isset( $mappings[ $delete_index ] ) ) {
-                unset( $mappings[ $delete_index ] );
-                $mappings = array_values( $mappings );
-                update_option( RUP_CRM_TM_OPTION_MAPPINGS, wp_json_encode( $mappings ) );
-            }
+    // load & guarantee at least one
+    $maps = rup_crm_tm_get_mappings();
+
+    // handle Add
+    if ( isset( $_GET['add_mapping'], $_GET['_wpnonce'] ) ) {
+        if ( wp_verify_nonce( sanitize_key( $_GET['_wpnonce'] ), 'rup_crm_tm_add' ) ) {
+            $maps[] = [ 'name'=>'', 'price_id'=>'', 'tags'=>[], 'enabled'=>'1' ];
+            update_option( RUP_CRM_TM_OPTION_MAPPINGS, wp_json_encode( $maps ) );
         }
-        // Redirect back to base URL (remove query args)
-        $base_url = remove_query_arg( [ 'delete_mapping', '_wpnonce' ] );
-        wp_safe_redirect( $base_url );
+        wp_safe_redirect( admin_url( 'admin.php?page=rup-crm-tag-mapper' ) );
         exit;
     }
 
-    // Load settings
-    $enabled  = get_option( RUP_CRM_TM_OPTION_ENABLED, '0' );
-    $json     = get_option( RUP_CRM_TM_OPTION_MAPPINGS, '[]' );
-    $mappings = json_decode( $json, true );
-    if ( ! is_array( $mappings ) ) {
-        $mappings = [];
-    }
-    if ( empty( $mappings ) ) {
-        $mappings = [
-            [
-                'price_id' => '',
-                'tags'     => [],
-                'enabled'  => '1',
-            ]
-        ];
+    // handle Delete
+    if ( isset( $_GET['delete_mapping'], $_GET['_wpnonce'] ) ) {
+        $i = absint( $_GET['delete_mapping'] );
+        if ( wp_verify_nonce( sanitize_key( $_GET['_wpnonce'] ), 'rup_crm_tm_delete_' . $i ) ) {
+            if ( isset( $maps[ $i ] ) ) {
+                array_splice( $maps, $i, 1 );
+                // after deletion, re-add blank if empty
+                if ( empty( $maps ) ) {
+                    $maps = [ [ 'name'=>'','price_id'=>'','tags'=>[],'enabled'=>'1' ] ];
+                }
+                update_option( RUP_CRM_TM_OPTION_MAPPINGS, wp_json_encode( $maps ) );
+            }
+        }
+        wp_safe_redirect( admin_url( 'admin.php?page=rup-crm-tag-mapper' ) );
+        exit;
     }
 
-    // Fetch FluentCRM tags
+    // After a normal POST save, WP will redirect back here; re-load maps
+    $enabled = get_option( RUP_CRM_TM_OPTION_ENABLED, '0' );
+    $maps    = rup_crm_tm_get_mappings();
+
+    // fetch FluentCRM tags
     $tags = [];
     if ( function_exists( 'FluentCrmApi' ) ) {
         try {
@@ -141,205 +151,174 @@ function rup_crm_tm_render_admin_page() {
     }
     ?>
     <div class="wrap">
-        <h1>CRM Tag Mapper</h1>
-        <form method="post" action="options.php">
-            <?php settings_fields( 'rup_crm_tm_group' ); ?>
+      <h1>CRM Tag Mapper</h1>
+      <form method="post" action="options.php">
+        <?php settings_fields( 'rup_crm_tm_group' ); ?>
 
-            <table class="form-table">
-                <tr>
-                    <th scope="row">Enable Tag Mapping</th>
-                    <td>
-                        <input type="checkbox"
-                               name="<?php echo esc_attr( RUP_CRM_TM_OPTION_ENABLED ); ?>"
-                               value="1"
-                            <?php checked( $enabled, '1' ); ?> />
-                    </td>
-                </tr>
-                <tr>
-                    <th scope="row">Price ID → Tags Mappings</th>
-                    <td id="rup-crm-tm-mappings">
-                        <?php foreach ( $mappings as $index => $map ) : ?>
-                            <div class="rup-mapping-row" style="margin-bottom:10px;">
-                                <!-- Price ID Field -->
-                                <label>
-                                    Price ID:
-                                    <input type="text"
-                                           name="<?php echo esc_attr( RUP_CRM_TM_OPTION_MAPPINGS ); ?>[<?php echo $index; ?>][price_id]"
-                                           value="<?php echo esc_attr( $map['price_id'] ); ?>" />
-                                </label>
+        <table class="form-table">
+          <tr>
+            <th scope="row">Enable Tag Mapping</th>
+            <td>
+              <input type="checkbox"
+                     name="<?php echo esc_attr(RUP_CRM_TM_OPTION_ENABLED);?>"
+                     value="1"<?php checked( $enabled, '1' );?>>
+            </td>
+          </tr>
 
-                                <!-- Tags Multi-Select -->
-                                <label style="margin-left:20px;">
-                                    Tags:
-                                    <select name="<?php echo esc_attr( RUP_CRM_TM_OPTION_MAPPINGS ); ?>[<?php echo $index; ?>][tags][]"
-                                            multiple
-                                            style="min-width:200px; height:6em;">
-                                        <?php foreach ( $tags as $tagObj ) : ?>
-                                            <option value="<?php echo esc_attr( $tagObj->slug ); ?>"
-                                                <?php echo in_array( $tagObj->slug, (array) $map['tags'], true ) ? 'selected' : ''; ?>>
-                                                <?php echo esc_html( $tagObj->title ); ?>
-                                            </option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </label>
+          <tr valign="top">
+            <th scope="row">Mappings</th>
+            <td id="rup-crm-tm-mappings">
+              <?php foreach ( $maps as $i => $m ) : ?>
+                <div class="rup-mapping-row">
+                  <label>
+                    <strong>Name</strong><br>
+                    <input type="text" style="width:100%;"
+                           name="<?php echo esc_attr(RUP_CRM_TM_OPTION_MAPPINGS);?>[<?php echo $i;?>][name]"
+                           value="<?php echo esc_attr($m['name']);?>">
+                  </label>
+                  <label>
+                    <strong>Price ID</strong><br>
+                    <input type="text" style="width:100%;"
+                           name="<?php echo esc_attr(RUP_CRM_TM_OPTION_MAPPINGS);?>[<?php echo $i;?>][price_id]"
+                           value="<?php echo esc_attr($m['price_id']);?>">
+                  </label>
+                  <label>
+                    <strong>Tags</strong><br>
+                    <select class="rup-crm-tag-select"
+                            name="<?php echo esc_attr(RUP_CRM_TM_OPTION_MAPPINGS);?>[<?php echo $i;?>][tags][]"
+                            multiple="multiple" style="width:100%;">
+                      <?php foreach ( $tags as $t ) : ?>
+                        <option value="<?php echo esc_attr($t->slug);?>"
+                          <?php selected( in_array( $t->slug, (array)$m['tags'], true ) );?>>
+                          <?php echo esc_html( $t->title );?>
+                        </option>
+                      <?php endforeach; ?>
+                    </select>
+                  </label>
+                  <label style="flex:0 0 auto; display:block; margin-top:1.5em;">
+                    <input type="checkbox"
+                           name="<?php echo esc_attr(RUP_CRM_TM_OPTION_MAPPINGS);?>[<?php echo $i;?>][enabled]"
+                           value="1"<?php checked( $m['enabled'], '1' );?>>
+                    Enabled
+                  </label>
+                  <?php
+                    $del_nonce = wp_create_nonce( 'rup_crm_tm_delete_' . $i );
+                    $del_url   = add_query_arg( [
+                      'page'           => 'rup-crm-tag-mapper',
+                      'delete_mapping' => $i,
+                      '_wpnonce'       => $del_nonce
+                    ], admin_url( 'admin.php' ) );
+                  ?>
+                  <a href="<?php echo esc_url( $del_url );?>"
+                     class="button-link delete-mapping"
+                     onclick="return confirm('Delete this mapping?');"
+                     style="color:#a00; align-self:flex-start;margin-left:1rem;">
+                    Delete
+                  </a>
+                </div>
+              <?php endforeach; ?>
 
-                                <!-- Enabled Checkbox -->
-                                <label style="margin-left:20px;">
-                                    <input type="checkbox"
-                                           name="<?php echo esc_attr( RUP_CRM_TM_OPTION_MAPPINGS ); ?>[<?php echo $index; ?>][enabled]"
-                                           value="1"
-                                        <?php checked( $map['enabled'], '1' ); ?> />
-                                    Enabled
-                                </label>
+              <p style="margin-top:1em;">
+                <?php
+                  $add_nonce = wp_create_nonce( 'rup_crm_tm_add' );
+                  $add_url   = add_query_arg( [
+                    'page'         => 'rup-crm-tag-mapper',
+                    'add_mapping'  => '1',
+                    '_wpnonce'     => $add_nonce
+                  ], admin_url( 'admin.php' ) );
+                ?>
+                <a href="<?php echo esc_url( $add_url );?>" class="button">Add Mapping</a>
+              </p>
+            </td>
+          </tr>
+        </table>
 
-                                <!-- Delete Button -->
-                                <?php
-                                $delete_nonce = wp_create_nonce( 'rup_crm_tm_delete_' . $index );
-                                $delete_url   = add_query_arg( [
-                                    'page'           => 'rup-crm-tag-mapper',
-                                    'delete_mapping' => $index,
-                                    '_wpnonce'       => $delete_nonce,
-                                ], admin_url( 'admin.php' ) );
-                                ?>
-                                <a href="<?php echo esc_url( $delete_url ); ?>"
-                                   class="button-link delete-mapping"
-                                   onclick="return confirm('Are you sure you want to delete this mapping?');"
-                                   style="color: #a00; margin-left:8px;">
-                                    Delete
-                                </a>
-                            </div>
-                        <?php endforeach; ?>
-
-                        <!-- Add Mapping Button -->
-                        <p>
-                            <button type="button" class="button" id="rup-crm-tm-add">
-                                Add Mapping
-                            </button>
-                        </p>
-                    </td>
-                </tr>
-            </table>
-
-            <?php submit_button(); ?>
-        </form>
+        <?php submit_button(); ?>
+      </form>
     </div>
 
-    <!-- JavaScript to clone a new mapping row -->
-    <script>
-    (function(){
-        var container = document.getElementById('rup-crm-tm-mappings');
-        var btn       = document.getElementById('rup-crm-tm-add');
-
-        btn.addEventListener('click', function(){
-            var rows      = container.querySelectorAll('.rup-mapping-row');
-            if (!rows.length) return;
-            var last      = rows[rows.length - 1];
-            var clone     = last.cloneNode(true);
-            var newIndex  = rows.length;
-
-            clone.querySelectorAll('input, select, a.delete-mapping').forEach(function(el){
-                // Update name attributes
-                if (el.name) {
-                    var name = el.getAttribute('name')
-                                .replace(/\[\d+\]/, '[' + newIndex + ']');
-                    el.setAttribute('name', name);
-                }
-                // Clear text inputs & reset checkboxes
-                if (el.tagName === 'INPUT') {
-                    if (el.type === 'text')     el.value   = '';
-                    if (el.type === 'checkbox') el.checked = true;
-                }
-                // De-select all options in multi-select
-                if (el.tagName === 'SELECT') {
-                    Array.from(el.options).forEach(function(opt){
-                        opt.selected = false;
-                    });
-                }
-                // Remove old delete-link so it regenerates on save
-                if (el.classList.contains('delete-mapping')) {
-                    el.remove();
-                }
-            });
-
-            container.insertBefore(clone, btn.parentNode);
-        });
-    })();
-    </script>
+    <style>
+      #rup-crm-tm-mappings .rup-mapping-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        padding: .75rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+      }
+      #rup-crm-tm-mappings .rup-mapping-row label {
+        flex: 1 1 200px;
+        margin: 0;
+      }
+    </style>
     <?php
 }
 
-
 /**
- * Handle SureCart checkout: map price IDs to tags and update FluentCRM
+ * On purchase (or other event), apply tags via FluentCRM
+ *
+ * @param object $checkout  The SureCart checkout/subscription object.
  */
-add_action( 'surecart/checkout_confirmed', function( $checkout, $request ) {
-    if ( get_option( RUP_CRM_TM_OPTION_ENABLED ) !== '1' ) {
+function rup_crm_apply_fluentcrm_tags( $checkout ) {
+    if ( get_option( RUP_CRM_TM_OPTION_ENABLED ) !== '1' || ! function_exists( 'FluentCrmApi' ) ) {
         return;
     }
 
-    $json     = get_option( RUP_CRM_TM_OPTION_MAPPINGS, '[]' );
-    $mappings = json_decode( $json, true );
-
-    if ( empty( $mappings ) || ! function_exists( 'FluentCrmApi' ) ) {
+    $maps = json_decode( get_option( RUP_CRM_TM_OPTION_MAPPINGS, '[]' ), true );
+    if ( empty( $maps ) ) {
         return;
     }
 
-    $email      = $checkout->email ?? '';
-    $first_name = $checkout->first_name ?? '';
-    $last_name  = $checkout->last_name ?? '';
-    $items      = is_array( $checkout->line_items->data ) ? $checkout->line_items->data : [];
+    // 1) Remove all mappings that aren't enabled
+    $maps = array_filter( $maps, fn( $m ) => ! empty( $m['enabled'] ) && $m['enabled'] === '1' );
 
-    $tags_to_apply = [];
+    $email = $checkout->email ?? '';
+    if ( ! $email ) {
+        return;
+    }
 
-    foreach ( $items as $item ) {
-        foreach ( $mappings as $map ) {
-            if ( $map['enabled'] === '1' && $map['price_id'] === $item->price_id && ! empty( $map['tags'] ) ) {
-                foreach ( (array) $map['tags'] as $slug ) {
+    // 2) Loop through items and only match price_id (every $m here is enabled)
+    $to_apply = [];
+    foreach ( $checkout->line_items->data as $item ) {
+        foreach ( $maps as $m ) {
+            if ( $m['price_id'] === $item->price_id ) {
+                foreach ( (array) $m['tags'] as $slug ) {
                     if ( $slug ) {
-                        $tags_to_apply[] = $slug;
-                        rup_crm_tm_debuglog( "Matched price {$item->price_id}, applying tag {$slug}" );
+                        $to_apply[] = $slug;
                     }
                 }
             }
         }
     }
 
-    if ( empty( $tags_to_apply ) || ! $email ) {
+    $to_apply = array_values( array_unique( $to_apply ) );
+    if ( empty( $to_apply ) ) {
         return;
     }
 
+    // 3) Push to FluentCRM
     $data = [
         'email'      => $email,
-        'first_name' => $first_name,
-        'last_name'  => $last_name,
+        'first_name' => $checkout->first_name ?? '',
+        'last_name'  => $checkout->last_name  ?? '',
         'status'     => 'subscribed',
-        'tags'       => array_values( array_unique( $tags_to_apply ) ),
+        'tags'       => $to_apply,
     ];
 
     try {
-        $subscriber = FluentCrmApi( 'contacts' )->createOrUpdate( $data );
-        if ( $subscriber && $subscriber->status === 'pending' ) {
-            $subscriber->sendDoubleOptinEmail();
+        $contact = FluentCrmApi( 'contacts' )->createOrUpdate( $data );
+        if ( $contact && $contact->status === 'pending' ) {
+            $contact->sendDoubleOptinEmail();
         }
     } catch ( Exception $e ) {
         rup_crm_tm_debuglog( 'FluentCRM error: ' . $e->getMessage() );
     }
-}, 10, 2 );
+}
 
+// Hook it to SureCart’s checkout confirmation
+add_action( 'surecart/checkout_confirmed', 'rup_crm_apply_fluentcrm_tags', 10, 1 );
 
-/**
- * Plugin updater
- */
-add_action( 'plugins_loaded', function() {
-    $updater_config = [
-        'plugin_file' => plugin_basename( __FILE__ ),
-        'slug'        => 'rup-crm-tag-mapper',
-        'name'        => 'Tag Manager for SureCart',
-        'version'     => RUP_CRM_TM_MANAGER_VERSION,
-        'key'         => 'CeW5jUv66xCMVZd83QTema',
-        'server'      => 'https://updater.reallyusefulplugins.com/u/',
-    ];
+// Also hook it to your second event
+add_action( 'surelywp_tk_lm_on_new_order_create', 'rup_crm_apply_fluentcrm_tags', 10, 1 );
 
-    require_once __DIR__ . '/inc/updater.php';
-    new \UUPD\V1\UUPD_Updater_V1( $updater_config );
-} );
