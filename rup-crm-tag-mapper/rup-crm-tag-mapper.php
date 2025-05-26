@@ -5,7 +5,7 @@
  * Tested up to:      6.8.1
  * Requires at least: 6.5
  * Requires PHP:      8.0
- * Version:           1.0.5
+ * Version:           1.0.6
  * Author:            Reallyusefulplugins.com
  * Author URI:        https://reallyusefulplugins.com
  * License:           GPL2
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define('RUP_CRM_TM_MANAGER_VERSION', '1.0.5');
+define( 'RUP_CRM_TM_MANAGER_VERSION', '1.0.6' );
 
 // Option keys
 define( 'RUP_CRM_TM_OPTION_ENABLED',  'rup_crm_tm_enabled' );
@@ -46,20 +46,20 @@ add_action( 'admin_init', function() {
         'default'           => '0',
     ] );
 
-    // Store mappings as JSON
+    // Store mappings as JSON with multiple tags
     register_setting( 'rup_crm_tm_group', RUP_CRM_TM_OPTION_MAPPINGS, [
         'type'              => 'string',
         'sanitize_callback' => function( $v ) {
-            // 1) If WP is loading the existing option (JSON string), just return it untouched
+            // 1) If loading existing JSON, leave untouched
             if ( is_string( $v ) && null !== json_decode( $v, true ) ) {
                 return $v;
             }
-            // 2) If WP is sanitizing the new form POST (array), encode it
+            // 2) If sanitizing form POST (array), encode it
             if ( is_array( $v ) ) {
                 return wp_json_encode( array_map( function( $map ) {
                     return [
                         'price_id' => sanitize_text_field( $map['price_id'] ?? '' ),
-                        'tag'      => sanitize_text_field( $map['tag'] ?? '' ),
+                        'tags'     => array_values( array_map( 'sanitize_text_field', (array) ( $map['tags'] ?? [] ) ) ),
                         'enabled'  => ( isset( $map['enabled'] ) && $map['enabled'] === '1' ) ? '1' : '0',
                     ];
                 }, $v ) );
@@ -94,7 +94,7 @@ function rup_crm_tm_render_admin_page() {
         return;
     }
 
-    // 1) Handle deletion requests
+    // Handle deletion requests
     if ( isset( $_GET['delete_mapping'] ) && isset( $_GET['_wpnonce'] ) ) {
         $delete_index = absint( $_GET['delete_mapping'] );
         $nonce_action = 'rup_crm_tm_delete_' . $delete_index;
@@ -113,7 +113,7 @@ function rup_crm_tm_render_admin_page() {
         exit;
     }
 
-    // 2) Load settings
+    // Load settings
     $enabled  = get_option( RUP_CRM_TM_OPTION_ENABLED, '0' );
     $json     = get_option( RUP_CRM_TM_OPTION_MAPPINGS, '[]' );
     $mappings = json_decode( $json, true );
@@ -121,7 +121,13 @@ function rup_crm_tm_render_admin_page() {
         $mappings = [];
     }
     if ( empty( $mappings ) ) {
-        $mappings = [ [ 'price_id' => '', 'tag' => '', 'enabled' => '1' ] ];
+        $mappings = [
+            [
+                'price_id' => '',
+                'tags'     => [],
+                'enabled'  => '1',
+            ]
+        ];
     }
 
     // Fetch FluentCRM tags
@@ -150,7 +156,7 @@ function rup_crm_tm_render_admin_page() {
                     </td>
                 </tr>
                 <tr>
-                    <th scope="row">Price ID → Tag Mappings</th>
+                    <th scope="row">Price ID → Tags Mappings</th>
                     <td id="rup-crm-tm-mappings">
                         <?php foreach ( $mappings as $index => $map ) : ?>
                             <div class="rup-mapping-row" style="margin-bottom:10px;">
@@ -162,22 +168,23 @@ function rup_crm_tm_render_admin_page() {
                                            value="<?php echo esc_attr( $map['price_id'] ); ?>" />
                                 </label>
 
-                                <!-- Tag Selector -->
-                                <label>
-                                    Tag:
-                                    <select name="<?php echo esc_attr( RUP_CRM_TM_OPTION_MAPPINGS ); ?>[<?php echo $index; ?>][tag]">
-                                        <option value="">&mdash; Select Tag &mdash;</option>
-                                        <?php foreach ( $tags as $tag ) : ?>
-                                            <option value="<?php echo esc_attr( $tag->slug ); ?>"
-                                                <?php selected( $map['tag'], $tag->slug ); ?>>
-                                                <?php echo esc_html( $tag->title ); ?>
+                                <!-- Tags Multi-Select -->
+                                <label style="margin-left:20px;">
+                                    Tags:
+                                    <select name="<?php echo esc_attr( RUP_CRM_TM_OPTION_MAPPINGS ); ?>[<?php echo $index; ?>][tags][]"
+                                            multiple
+                                            style="min-width:200px; height:6em;">
+                                        <?php foreach ( $tags as $tagObj ) : ?>
+                                            <option value="<?php echo esc_attr( $tagObj->slug ); ?>"
+                                                <?php echo in_array( $tagObj->slug, (array) $map['tags'], true ) ? 'selected' : ''; ?>>
+                                                <?php echo esc_html( $tagObj->title ); ?>
                                             </option>
                                         <?php endforeach; ?>
                                     </select>
                                 </label>
 
                                 <!-- Enabled Checkbox -->
-                                <label>
+                                <label style="margin-left:20px;">
                                     <input type="checkbox"
                                            name="<?php echo esc_attr( RUP_CRM_TM_OPTION_MAPPINGS ); ?>[<?php echo $index; ?>][enabled]"
                                            value="1"
@@ -237,16 +244,18 @@ function rup_crm_tm_render_admin_page() {
                                 .replace(/\[\d+\]/, '[' + newIndex + ']');
                     el.setAttribute('name', name);
                 }
-                // Clear inputs
+                // Clear text inputs & reset checkboxes
                 if (el.tagName === 'INPUT') {
                     if (el.type === 'text')     el.value   = '';
                     if (el.type === 'checkbox') el.checked = true;
                 }
-                // Reset select
+                // De-select all options in multi-select
                 if (el.tagName === 'SELECT') {
-                    el.selectedIndex = 0;
+                    Array.from(el.options).forEach(function(opt){
+                        opt.selected = false;
+                    });
                 }
-                // Remove any old delete‐URL and recreate (nonce will be invalid on new row until form save)
+                // Remove old delete-link so it regenerates on save
                 if (el.classList.contains('delete-mapping')) {
                     el.remove();
                 }
@@ -281,11 +290,16 @@ add_action( 'surecart/checkout_confirmed', function( $checkout, $request ) {
     $items      = is_array( $checkout->line_items->data ) ? $checkout->line_items->data : [];
 
     $tags_to_apply = [];
+
     foreach ( $items as $item ) {
         foreach ( $mappings as $map ) {
-            if ( $map['enabled'] === '1' && $map['price_id'] === $item->price_id && ! empty( $map['tag'] ) ) {
-                $tags_to_apply[] = $map['tag'];
-                rup_crm_tm_debuglog("Matched price {$item->price_id}, applying tag {$map['tag']}");
+            if ( $map['enabled'] === '1' && $map['price_id'] === $item->price_id && ! empty( $map['tags'] ) ) {
+                foreach ( (array) $map['tags'] as $slug ) {
+                    if ( $slug ) {
+                        $tags_to_apply[] = $slug;
+                        rup_crm_tm_debuglog( "Matched price {$item->price_id}, applying tag {$slug}" );
+                    }
+                }
             }
         }
     }
@@ -299,11 +313,11 @@ add_action( 'surecart/checkout_confirmed', function( $checkout, $request ) {
         'first_name' => $first_name,
         'last_name'  => $last_name,
         'status'     => 'subscribed',
-        'tags'       => array_values( array_unique( $tags_to_apply ) )
+        'tags'       => array_values( array_unique( $tags_to_apply ) ),
     ];
 
     try {
-        $subscriber = FluentCrmApi('contacts')->createOrUpdate($data);
+        $subscriber = FluentCrmApi( 'contacts' )->createOrUpdate( $data );
         if ( $subscriber && $subscriber->status === 'pending' ) {
             $subscriber->sendDoubleOptinEmail();
         }
@@ -313,7 +327,9 @@ add_action( 'surecart/checkout_confirmed', function( $checkout, $request ) {
 }, 10, 2 );
 
 
-
+/**
+ * Plugin updater
+ */
 add_action( 'plugins_loaded', function() {
     $updater_config = [
         'plugin_file' => plugin_basename( __FILE__ ),
@@ -325,5 +341,5 @@ add_action( 'plugins_loaded', function() {
     ];
 
     require_once __DIR__ . '/inc/updater.php';
-    $updater = new \UUPD\V1\UUPD_Updater_V1( $updater_config  );
+    new \UUPD\V1\UUPD_Updater_V1( $updater_config );
 } );
