@@ -5,7 +5,7 @@
  * Tested up to:      6.8.1
  * Requires at least: 6.5
  * Requires PHP:      8.0
- * Version:           1.0.6
+ * Version:           1.0.7
  * Author:            Reallyusefulplugins.com
  * Author URI:        https://reallyusefulplugins.com
  * License:           GPL2
