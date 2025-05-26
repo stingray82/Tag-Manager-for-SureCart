@@ -251,6 +251,14 @@ function rup_crm_tm_render_admin_page() {
         flex: 1 1 200px;
         margin: 0;
       }
+
+      #rup-crm-tm-mappings {
+          max-height: 600px;
+          overflow-y: auto;
+          padding: 1em;
+          background: #fafafa;
+          border: 1px solid #eee;
+        }
     </style>
     <?php
 }
