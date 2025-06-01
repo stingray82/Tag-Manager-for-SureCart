@@ -5,7 +5,7 @@
  * Tested up to:      6.8.1
  * Requires at least: 6.5
  * Requires PHP:      8.0
- * Version:           1.0.7.2
+ * Version:           1.0.7.7
  * Author:            Reallyusefulplugins.com
  * Author URI:        https://reallyusefulplugins.com
  * License:           GPL2
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 define( 'RUP_CRM_TM_OPTION_ENABLED',  'rup_crm_tm_enabled' );
 define( 'RUP_CRM_TM_OPTION_MAPPINGS', 'rup_crm_tm_mappings' );
-define('RUP_CRM_TM_VERSION', '1.0.7.2');
+define('RUP_CRM_TM_VERSION', '1.0.7.7');
 
 // Always ensure there's at least one blank mapping
 function rup_crm_tm_get_mappings() {
@@ -331,16 +331,26 @@ add_action( 'surecart/checkout_confirmed', 'rup_crm_apply_fluentcrm_tags', 10, 1
 // Also hook it to your second event
 add_action( 'surelywp_tk_lm_on_new_order_create', 'rup_crm_apply_fluentcrm_tags', 10, 1 );
 
+// ──────────────────────────────────────────────────────────────────────────
+//  Updater bootstrap (plugins_loaded priority 1):
+// ──────────────────────────────────────────────────────────────────────────
 add_action( 'plugins_loaded', function() {
+    // 1) Load our universal drop-in. Because that file begins with "namespace UUPD\V1;",
+    //    both the class and the helper live under UUPD\V1.
+    require_once __DIR__ . '/inc/updater.php';
+
+    // 2) Build a single $updater_config array:
     $updater_config = [
-        'plugin_file' => plugin_basename( __FILE__ ),
-        'slug'        => 'rup-crm-tag-mapper',  // "rup-changelogger"
-        'name'        => 'Tag Manager for SureCart',        // "Changelogger"
-        'version'     => RUP_CRM_TM_VERSION,     // "1.01"
-        'key'         => 'CeW5jUv66xCMVZd83QTema',
+        'plugin_file' => plugin_basename( __FILE__ ),             // e.g. "simply-static-export-notify/simply-static-export-notify.php"
+        'slug'        => 'rup-crm-tag-mapper',           // must match your updater‐server slug
+        'name'        => 'Tag Manager for SureCart',         // human‐readable plugin name
+        'version'     => RUP_CRM_TM_VERSION, // same as the VERSION constant above
+        'key'         => 'CeW5jUv66xCMVZd83QTema',                 // your secret key for private updater
         'server'      => 'https://updater.reallyusefulplugins.com/u/',
+        // 'textdomain' is omitted, so the helper will automatically use 'slug'
+        //'textdomain'  => 'rup-crm-tag-mapper',           // used to translate “Check for updates”
     ];
 
-    require_once __DIR__ . '/inc/updater.php';
-    $updater = new \UUPD\V1\UUPD_Updater_V1( $updater_config  );
-} );
+    // 3) Call the helper in the UUPD\V1 namespace:
+    \UUPD\V1\UUPD_Updater_V1::register( $updater_config );
+}, 1 );
