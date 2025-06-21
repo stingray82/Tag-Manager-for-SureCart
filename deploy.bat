@@ -19,7 +19,7 @@ SET "DEST_DIR="
 SET "DEPLOY_TARGET=github"  REM github or private
 
 REM GitHub settings
-SET "GITHUB_REPO=Tag-Manager-for-SureCart"
+SET "GITHUB_REPO=stingray82/Tag-Manager-for-SureCart"
 SET "TOKEN_FILE=C:\Ignore By Avast\0. PATHED Items\Plugins\deployscripts\github_token.txt"
 SET /P GITHUB_TOKEN=<"%TOKEN_FILE%"
 SET "ZIP_NAME=rup-crm-tag-mapper.zip"
