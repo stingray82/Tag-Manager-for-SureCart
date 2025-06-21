@@ -5,7 +5,7 @@
  * Tested up to:      6.8.1
  * Requires at least: 6.5
  * Requires PHP:      8.0
- * Version:           1.0.7.9
+ * Version:           1.0.7.10
  * Author:            Reallyusefulplugins.com
  * Author URI:        https://reallyusefulplugins.com
  * License:           GPL2
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 define( 'RUP_CRM_TM_OPTION_ENABLED',  'rup_crm_tm_enabled' );
 define( 'RUP_CRM_TM_OPTION_MAPPINGS', 'rup_crm_tm_mappings' );
-define('RUP_CRM_TM_VERSION', '1.0.7.9');
+define('RUP_CRM_TM_VERSION', '1.0.7.10');
 
 // Always ensure there's at least one blank mapping
 function rup_crm_tm_get_mappings() {
@@ -346,7 +346,7 @@ add_action( 'plugins_loaded', function() {
         'name'        => 'Tag Manager for SureCart',         // human‐readable plugin name
         'version'     => RUP_CRM_TM_VERSION, // same as the VERSION constant above
         'key'         => 'CeW5jUv66xCMVZd83QTema',                 // your secret key for private updater
-        'server'      => 'https://updater.reallyusefulplugins.com/u/',
+        'server'      => 'https://raw.githubusercontent.com/stingray82/Tag-Manager-for-SureCart/main/uupd/index.json',
         // 'textdomain' is omitted, so the helper will automatically use 'slug'
         //'textdomain'  => 'rup-crm-tag-mapper',           // used to translate “Check for updates”
     ];
