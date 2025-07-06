@@ -26,6 +26,10 @@ Easily Map your Sure Cart Products Price IDS to Fluent CRM tags for access restr
 = How do I add a new dashboard tab? =
 After Activating Navigate to the new submenu in the Sure Cart Menu and enable, add your price ID select your Fluent Tag and Save 
 == Changelog == 
+= 1.0.9 06 July 2025 =
+New: Rescoped RUP_UUPD
+Update: UUPD 1.2.4
+
 = 1.0.8 21 June 2025 =
 New: Updates Now served directly from GitHub using UUPD
 
