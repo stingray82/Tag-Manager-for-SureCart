@@ -5,7 +5,7 @@
  * Tested up to:      6.8.1
  * Requires at least: 6.5
  * Requires PHP:      8.0
- * Version:           1.0.8
+ * Version:           1.0.9
  * Author:            Reallyusefulplugins.com
  * Author URI:        https://reallyusefulplugins.com
  * License:           GPL2
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 define( 'RUP_CRM_TM_OPTION_ENABLED',  'rup_crm_tm_enabled' );
 define( 'RUP_CRM_TM_OPTION_MAPPINGS', 'rup_crm_tm_mappings' );
-define('RUP_CRM_TM_VERSION', '1.0.8');
+define('RUP_CRM_TM_VERSION', '1.0.9');
 
 // Always ensure there's at least one blank mapping
 function rup_crm_tm_get_mappings() {
@@ -352,5 +352,5 @@ add_action( 'plugins_loaded', function() {
     ];
 
     // 3) Call the helper in the UUPD\V1 namespace:
-    \UUPD\V1\UUPD_Updater_V1::register( $updater_config );
+    \RUP\Updater\Updater_V1::register( $updater_config );
 }, 1 );

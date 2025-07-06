@@ -1,7 +1,7 @@
 {
     "slug": "Tag-Manager-for-SureCart",
     "name": "Tag Manager for SureCart",
-    "version": "1.0.8",
+    "version": "1.0.9",
     "author": "Reallyusefulplugins.com",
     "author_homepage": "https://reallyusefulplugins.com",
     "requires_php": "8.0",
@@ -13,7 +13,7 @@
         "frequently_asked_questions": "= How do I add a new dashboard tab? =<br />\r\nAfter Activating Navigate to the new submenu in the Sure Cart Menu and enable, add your price ID select your Fluent Tag and Save",
         "changelog": "<h4>1.0.8 21 June 2025</h4><ul><li>New: Updates Now served directly from GitHub using UUPD</li></ul><h4>1.0.7 (27 May 2025)</h4><ul><li>Improve: Updater Class robustness in WP 6.8</li></ul><h4>1.0.6 (26 May 2025)</h4><ul><li>New: Admin Overhaul Part 1</li><li>New: Multi-Tag Support</li><li>New: SurelyWP Hook Added</li></ul><h4>1.0.5 (25 May 2025)</h4><ul><li>New: Delete Parings</li></ul><h4>1.0.4 (23 May 2025)</h4><ul><li>Tweak: First Automatic Updater Test</li></ul><h4>1.0.3 (23 May 2025)</h4><ul><li>New: Added Automatic Updater</li></ul><h4>1.0.2 (22 May 2025)</h4><ul><li>New: Allow each mapping to be disabled i.e. for offer periods.</li></ul><h4>1.0.1 (20 May 2025)</h4><ul><li>New: Added Dynamic Loading of Tags</li></ul><h4>1.0 (19 May 2025)</h4><ul><li>New: Initial Release</li></ul>"
     },
-    "last_updated": "2025-06-21 16:40:37",
+    "last_updated": "2025-07-06 17:48:03",
     "download_url": "https://github.com/stingray82/Tag-Manager-for-SureCart/releases/latest/download/rup-crm-tag-mapper.zip",
     "banners": {
         "low": "https://raw.githubusercontent.com/stingray82/Tag-Manager-for-SureCart/main/uupd/banner-772x250.png",
