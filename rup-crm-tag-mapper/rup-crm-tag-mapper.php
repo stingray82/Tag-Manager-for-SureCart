@@ -2,10 +2,10 @@
 /**
  * Plugin Name:       Tag Manager for SureCart
  * Description:       Map SureCart price IDs to FluentCRM tags and assign tags on purchase.
- * Tested up to:      6.8.1
+ * Tested up to:      6.8.2
  * Requires at least: 6.5
  * Requires PHP:      8.0
- * Version:           1.0.10
+ * Version:           1.0.11
  * Author:            Reallyusefulplugins.com
  * Author URI:        https://reallyusefulplugins.com
  * License:           GPL2
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 define( 'RUP_CRM_TM_OPTION_ENABLED',  'rup_crm_tm_enabled' );
 define( 'RUP_CRM_TM_OPTION_MAPPINGS', 'rup_crm_tm_mappings' );
-define('RUP_CRM_TM_VERSION', '1.0.10');
+define('RUP_CRM_TM_VERSION', '1.0.11');
 
 // Always ensure there's at least one blank mapping
 function rup_crm_tm_get_mappings() {
@@ -353,4 +353,4 @@ add_action( 'plugins_loaded', function() {
 
     // 3) Call the helper in the UUPD\V1 namespace:
     \RUP\Updater\Updater_V1::register( $updater_config );
-}, 1 );
+}, 20 );
