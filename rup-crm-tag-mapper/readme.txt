@@ -4,7 +4,7 @@ Donate link: https://reallyusefulplugins.com/donate
 Tags: surecart, crm, fluentcrm, tags, ecommerce
 Requires at least: 6.5
 Tested up to: 6.8.2
-Stable tag: 1.0.12
+Stable tag: 1.0.13
 Requires PHP: 8.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -26,6 +26,9 @@ Easily Map your Sure Cart Products Price IDS to Fluent CRM tags for access restr
 = How do I add a new dashboard tab? =
 After Activating Navigate to the new submenu in the Sure Cart Menu and enable, add your price ID select your Fluent Tag and Save 
 == Changelog == 
+= 1.0.13 5 August 2025 =
+Fixed: Comment out WP Icon Filter which is causing issues in latest MainWP
+
 = 1.0.12 2 Aug 2025 =
 New: MainWP Icon Filter
 

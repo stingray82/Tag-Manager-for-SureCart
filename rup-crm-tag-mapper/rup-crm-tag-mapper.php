@@ -5,7 +5,7 @@
  * Tested up to:      6.8.2
  * Requires at least: 6.5
  * Requires PHP:      8.0
- * Version:           1.0.12
+ * Version:           1.0.13
  * Author:            Reallyusefulplugins.com
  * Author URI:        https://reallyusefulplugins.com
  * License:           GPL2
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 define( 'RUP_CRM_TM_OPTION_ENABLED',  'rup_crm_tm_enabled' );
 define( 'RUP_CRM_TM_OPTION_MAPPINGS', 'rup_crm_tm_mappings' );
-define('RUP_CRM_TM_VERSION', '1.0.12');
+define('RUP_CRM_TM_VERSION', '1.0.13');
 
 // Always ensure there's at least one blank mapping
 function rup_crm_tm_get_mappings() {
@@ -356,6 +356,8 @@ add_action( 'plugins_loaded', function() {
 }, 20 );
 
 // MainWP Icon Filter
+/*
+
 add_filter('mainwp_child_stats_get_plugin_info', function($info, $slug) {
 
     if ('rup-crm-tag-mapper/rup-crm-tag-mapper.php' === $slug) {
@@ -365,3 +367,5 @@ add_filter('mainwp_child_stats_get_plugin_info', function($info, $slug) {
     return $info;
 
 }, 10, 2);
+
+*/
