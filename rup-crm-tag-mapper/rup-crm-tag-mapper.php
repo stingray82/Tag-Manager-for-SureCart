@@ -356,8 +356,6 @@ add_action( 'plugins_loaded', function() {
 }, 20 );
 
 // MainWP Icon Filter
-/*
-
 add_filter('mainwp_child_stats_get_plugin_info', function($info, $slug) {
 
     if ('rup-crm-tag-mapper/rup-crm-tag-mapper.php' === $slug) {
@@ -367,5 +365,3 @@ add_filter('mainwp_child_stats_get_plugin_info', function($info, $slug) {
     return $info;
 
 }, 10, 2);
-
-*/
