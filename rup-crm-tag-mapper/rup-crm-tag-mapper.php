@@ -2,10 +2,10 @@
 /**
  * Plugin Name:       Tag Manager for SureCart
  * Description:       Map SureCart price IDs to FluentCRM tags and assign tags on purchase.
- * Tested up to:      6.8.2
+ * Tested up to:      6.9.4
  * Requires at least: 6.5
  * Requires PHP:      8.0
- * Version:           1.0.15
+ * Version:           1.0.16
  * Author:            Reallyusefulplugins.com
  * Author URI:        https://reallyusefulplugins.com
  * License:           GPL2
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 define( 'RUP_CRM_TM_OPTION_ENABLED',  'rup_crm_tm_enabled' );
 define( 'RUP_CRM_TM_OPTION_MAPPINGS', 'rup_crm_tm_mappings' );
-define('RUP_CRM_TM_VERSION', '1.0.15');
+define('RUP_CRM_TM_VERSION', '1.0.16');
 
 // Always ensure there's at least one blank mapping
 function rup_crm_tm_get_mappings() {
@@ -332,15 +332,16 @@ add_action( 'surecart/checkout_confirmed', 'rup_crm_apply_fluentcrm_tags', 10, 1
 add_action( 'surelywp_tk_lm_on_new_order_create', 'rup_crm_apply_fluentcrm_tags', 10, 1 );
 
 // ──────────────────────────────────────────────────────────────────────────
-//  Updater bootstrap (plugins_loaded priority 1):
+//  Updater bootstrap (plugins_loaded priority 20):
 // ──────────────────────────────────────────────────────────────────────────
 add_action( 'plugins_loaded', function() {
     // 1) Load our universal drop-in. Because that file begins with "namespace UUPD\V1;",
-    //    both the class and the helper live under UUPD\V1.
+    //    both the class and the helper live under UUPD\V2.
     require_once __DIR__ . '/inc/updater.php';
 
     // 2) Build a single $updater_config array:
     $updater_config = [
+    	'vendor'      => 'RUP',
         'plugin_file' => plugin_basename( __FILE__ ),             // e.g. "simply-static-export-notify/simply-static-export-notify.php"
         'slug'        => 'rup-crm-tag-mapper',           // must match your updater‐server slug
         'name'        => 'Tag Manager for SureCart',         // human‐readable plugin name
@@ -351,8 +352,8 @@ add_action( 'plugins_loaded', function() {
         //'textdomain'  => 'rup-crm-tag-mapper',           // used to translate “Check for updates”
     ];
 
-    // 3) Call the helper in the UUPD\V1 namespace:
-    \RUP\Updater\Updater_V1::register( $updater_config );
+    // 3) Call the helper in the UUPD\V2 namespace:
+    \RUP\Updater\Updater_V2::register( $updater_config );
 }, 20 );
 
 // MainWP Icon Filter
