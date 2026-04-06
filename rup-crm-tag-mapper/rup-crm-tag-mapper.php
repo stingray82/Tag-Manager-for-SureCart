@@ -5,7 +5,7 @@
  * Tested up to:      6.9.4
  * Requires at least: 6.5
  * Requires PHP:      8.0
- * Version:           1.0.16
+ * Version:           1.0.17
  * Author:            Reallyusefulplugins.com
  * Author URI:        https://reallyusefulplugins.com
  * License:           GPL2
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 define( 'RUP_CRM_TM_OPTION_ENABLED',  'rup_crm_tm_enabled' );
 define( 'RUP_CRM_TM_OPTION_MAPPINGS', 'rup_crm_tm_mappings' );
-define('RUP_CRM_TM_VERSION', '1.0.16');
+define('RUP_CRM_TM_VERSION', '1.0.17');
 
 // Always ensure there's at least one blank mapping
 function rup_crm_tm_get_mappings() {
@@ -69,14 +69,14 @@ add_action( 'admin_init', function(){
  */
 add_action( 'admin_menu', function(){
     add_submenu_page(
-        'sc-onboarding-checklist',
+        'sc-dashboard',
         'CRM Tag Mapper',
         'CRM Tag Mapper',
         'manage_sc_shop_settings',
         'rup-crm-tag-mapper',
         'rup_crm_tm_render_admin_page'
     );
-}, 100 );
+}, 99 );
 
 /**
  * Enqueue Select2
