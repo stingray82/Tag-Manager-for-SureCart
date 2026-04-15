@@ -4,7 +4,7 @@ Donate link: https://reallyusefulplugins.com/donate
 Tags: surecart, crm, fluentcrm, tags, ecommerce
 Requires at least: 6.5
 Tested up to: 6.9.4
-Stable tag: 1.0.17
+Stable tag: 2.0
 Requires PHP: 8.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -26,7 +26,25 @@ Easily Map your Sure Cart Products Price IDS to Fluent CRM tags for access restr
 = How do I add a new dashboard tab? =
 After Activating Navigate to the new submenu in the Sure Cart Menu and enable, add your price ID select your Fluent Tag and Save
 == Changelog ==
-= 1.0.17 06 April 2026 =
+= 2.0.0 15 April 2026 =
+Breaking: Tag mappings must be recreated after updating from any 1.x version
+Breaking: Manual Price ID entry replaced with SureCart product and price dropdown selectors
+Warning: Please review and remap your tags after updating to ensure correct behaviour
+New: SureCart product lookup added to admin page
+New: SureCart price/version dropdown selector added
+New: “All prices for this product” mapping option
+New: Product-level mapping support (single rule for all prices)
+New: Mapping filters (search, status, and type)
+New: Add Mapping button added to both top and bottom of mappings screen
+Improvement: Modernised admin UI with card-based layout
+Improvement: Enhanced mapping UX with dynamic product/price selection
+Improvement: Improved purchase matching logic for product-wide and price-specific rules
+Removed: Friendly Name field (no longer required with product/price display)
+Compatibility: Continued support for FluentCRM tag assignment
+Compatibility: Maintained compatibility with SureCart checkout hooks
+Compatibility: Updater and MainWP integration retained
+
+1.0.17 06 April 2026 =
 Fixed: Admin Menu
 
 = 1.0.16 23 March 2026 =

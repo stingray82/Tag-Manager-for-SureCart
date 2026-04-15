@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 define( 'RUP_CRM_TM_OPTION_ENABLED', 'rup_crm_tm_enabled' );
 define( 'RUP_CRM_TM_OPTION_MAPPINGS', 'rup_crm_tm_mappings' );
-define( 'RUP_CRM_TM_VERSION', '2.0' );
+define('RUP_CRM_TM_VERSION', '2.0');
 
 /**
  * Basic debug logger.
