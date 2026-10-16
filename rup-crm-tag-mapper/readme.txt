@@ -1,13 +1,9 @@
 === Tag Manager for SureCart ===
-Contributors: reallyusefulplugins
-Donate link: https://reallyusefulplugins.com/donate
 Tags: surecart, crm, fluentcrm, tags, ecommerce
 Requires at least: 6.5
-Tested up to: 7.0.2
-Stable tag: 2.0.1
+Tested up to: 7.1.3
+Stable tag: 2.0.2
 Requires PHP: 8.0
-License: GPL-2.0-or-later
-License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
 Easily Map your Sure Cart Products Price IDS to Fluent CRM tags for access restriction or sub sectioning purchases
 
@@ -26,6 +22,10 @@ Easily Map your Sure Cart Products Price IDS to Fluent CRM tags for access restr
 = How do I add a new dashboard tab? =
 After Activating Navigate to the new submenu in the Sure Cart Menu and enable, add your price ID select your Fluent Tag and Save
 == Changelog ==
+= 2.0.2 16 October 2026 =
+Updated: UUPD Dependency Updated to Version 2.1 Stable
+Updated: Deploy Methodology
+
 = 2.0.1 24 July 2026 =
 Updated: UUPD Dependency Updated to Version 2.0 Stable
 
